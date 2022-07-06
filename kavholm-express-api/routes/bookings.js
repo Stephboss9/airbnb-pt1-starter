@@ -19,6 +19,7 @@ router.get("/listings", security.requireAuthenticatedUser, async (req, res, next
   try {
     // list all bookings created for any user-owned listings
     const { user } = res.locals
+    console.log("requestsss", req.body)
     const bookings = await Booking.listBookingsForUserListings(user)
     return res.status(200).json({ bookings })
   } catch (err) {
@@ -41,5 +42,24 @@ router.get(
     }
   }
 )
+
+router.post(
+  "/listings/:listingId/",
+  security.requireAuthenticatedUser,
+ permissions.authedUserIsNotListingOwner,
+  async (req, res, next) => {
+    try {
+      // list all bookings for a single listing
+      const { listing, user} = res.locals
+      const {newBooking} = req.body
+      const booking = await Booking.createBooking(newBooking, listing, user)
+      console.log("BOoking", booking)
+      return res.status(201).json({ booking })
+    } catch (err) {
+      next(err)
+    }
+  }
+)
+
 
 module.exports = router

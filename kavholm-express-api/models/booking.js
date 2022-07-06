@@ -136,6 +136,10 @@ requiredFields.forEach((field) => {
     throw new BadRequestError(`Missing required field - ${field} - in request body.`)
   }
 })
+console.log("NewBooking", newBooking)
+console.log("listing", listing)
+console.log("user", user)
+
 const payment_method = newBooking.payment_method || "card"
 const guests = newBooking.guests || 1
 
