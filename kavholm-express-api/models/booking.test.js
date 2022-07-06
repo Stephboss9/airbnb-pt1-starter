@@ -86,4 +86,44 @@ describe("Booking", () => {
       expect(bookings).toHaveLength(0)
     })
   })
+
+  describe("Test createBooking", () => {
+    test("Can create a new booking with valid params", async () => {
+      const user = { username: "jlo" }
+      const listingId = testListingIds[2]
+      const listing = await Listing.fetchListingById(listingId)
+      const newBooking = {startDate:"03-21-2021", endDate:"05-05-2021", guests:2}
+      const booking = await Booking.createBooking(newBooking, listing, user)
+
+      expect(booking).toEqual({
+        id: expect.any(Number),
+        startDate: new Date("03-21-2021"),
+        endDate: new Date("05-05-2021"),
+        paymentMethod: expect.any(String),
+        hostUsername: expect.any(String),
+        totalCost: expect.any(String),
+        guests: expect.any(Number),
+        username: "jlo",
+        userId: expect.any(Number),
+        listingId: expect.any(Number),
+        createdAt: expect.any(Date),
+      })
+    })
+
+    test("Throws error with invalid params", async () => {
+      expect.assertions(1)
+      const user = { username: "jlo" }
+      const listingId = testListingIds[2]
+      const listing = await Listing.fetchListingById(listingId)
+      const newBooking = {endDate:"04-14-2021"}
+      try {
+        await Booking.createBooking(newBooking)
+
+      } catch(err) {
+        expect(err instanceof BadRequestError).toBeTruthy()
+      }
+
+      const bookings = await Booking.listBookingsForUserListings(user)
+    })
+  })
 })

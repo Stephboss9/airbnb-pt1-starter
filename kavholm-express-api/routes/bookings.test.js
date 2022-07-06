@@ -1,5 +1,6 @@
 const request = require("supertest")
 const app = require("../app")
+const Listing = require("../models/listing")
 
 const {
   commonBeforeAll,
@@ -82,6 +83,38 @@ describe("GET /bookings/listings", () => {
 
   test("Throws Unauthorized error when user is unauthenticated", async () => {
     const res = await request(app).get(`/bookings/listings`)
+    expect(res.statusCode).toEqual(401)
+  })
+})
+
+describe("POST bookings/listings/:listingId", () => {
+  test("Authed user can book a listing they don't own", async () => {
+    const listingId = testListingIds[3]
+    const listing = await Listing.fetchListingById(listingId)
+    const data = {newBooking: {startDate:"03-24-2021", endDate:"03-29-2021", guests:10}}
+    const res = await request(app).post(`/bookings/listings/:listingId`).set("authorization", `Bearer ${testTokens.jloToken}`).send(data)
+
+    expect(res.statusCode).toEqual(201)
+
+    const { booking } = res.body
+
+    expect(booking).toEqual({
+      id: expect.any(Number),
+      startDate: new Date("03-05-2021").toISOString(),
+      endDate: new Date("03-07-2021").toISOString(),
+      paymentMethod: "card",
+      guests: 1,
+      username: "jlo",
+      hostUsername: "lebron",
+      totalCost: expect.any(Number),
+      listingId: listingId,
+      userId: expect.any(Number),
+      createdAt: expect.any(String),
+    })
+  })
+
+  test("Throws Unauthorized error when user is unauthenticated", async () => {
+    const res = await request(app).get(`/bookings/`)
     expect(res.statusCode).toEqual(401)
   })
 })
